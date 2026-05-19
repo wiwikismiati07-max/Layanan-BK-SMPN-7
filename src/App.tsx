@@ -581,7 +581,16 @@ export default function App() {
                         {transactions.map((t) => (
                           <tr key={t.id} className="hover:bg-slate-50 transition-colors">
                             <td className="py-6 px-4 text-sm font-semibold text-slate-900">{t.date}</td>
-                            <td className="py-6 px-4 text-sm text-slate-700">{t.description}</td>
+                            <td className="py-6 px-4 text-sm text-slate-700">
+                              <div className="flex flex-col gap-1">
+                                {t.description.split(', ').filter(d => d.trim() !== '').map((d, i) => (
+                                  <div key={i} className="flex items-start gap-2">
+                                    <span className="text-indigo-400 font-bold">•</span>
+                                    <span>{d}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </td>
                             <td className="py-6 px-4 text-sm font-bold text-slate-500 uppercase">{t.target}</td>
                             <td className="py-6 px-4">
                               {t.photoUrl ? (
