@@ -60,6 +60,7 @@ export default function App() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   
   // Form States
@@ -101,16 +102,30 @@ export default function App() {
   // Actions
   const handleAddTransaction = (e: React.FormEvent) => {
     e.preventDefault();
-    const item: Transaction = {
-      date: newTransaction.date,
-      target: newTransaction.target,
-      photoUrl: newTransaction.photoUrl,
-      note: newTransaction.note,
-      description: newTransaction.descriptions.filter(d => d.trim() !== '').join(', '),
-      id: Date.now().toString(),
-      createdAt: Date.now()
-    };
-    setTransactions([item, ...transactions]);
+    
+    if (editingId) {
+      setTransactions(transactions.map(t => t.id === editingId ? {
+        ...t,
+        date: newTransaction.date,
+        target: newTransaction.target,
+        photoUrl: newTransaction.photoUrl,
+        note: newTransaction.note,
+        description: newTransaction.descriptions.filter(d => d.trim() !== '').join(', '),
+      } : t));
+      setEditingId(null);
+    } else {
+      const item: Transaction = {
+        date: newTransaction.date,
+        target: newTransaction.target,
+        photoUrl: newTransaction.photoUrl,
+        note: newTransaction.note,
+        description: newTransaction.descriptions.filter(d => d.trim() !== '').join(', '),
+        id: Date.now().toString(),
+        createdAt: Date.now()
+      };
+      setTransactions([item, ...transactions]);
+    }
+
     setIsModalOpen(false);
     setNewTransaction({
       date: new Date().toISOString().split('T')[0],
@@ -119,6 +134,28 @@ export default function App() {
       photoUrl: '',
       note: ''
     });
+  };
+
+  const handleEditClick = (t: Transaction) => {
+    const descs = t.description.split(', ');
+    const filledDescs = [...descs];
+    while (filledDescs.length < 8) filledDescs.push('');
+    
+    setNewTransaction({
+      date: t.date,
+      descriptions: filledDescs.slice(0, 8),
+      target: t.target,
+      photoUrl: t.photoUrl,
+      note: t.note
+    });
+    setEditingId(t.id);
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = (id: string) => {
+    if (confirm('Apakah Anda yakin ingin menghapus agenda ini?')) {
+      setTransactions(transactions.filter(t => t.id !== id));
+    }
   };
 
   const handleExcelUpload = async (type: 'student' | 'class', e: React.ChangeEvent<HTMLInputElement>) => {
@@ -537,6 +574,7 @@ export default function App() {
                           <th className="py-6 px-4">Sasaran</th>
                           <th className="py-6 px-4">Link Foto</th>
                           <th className="py-6 px-4">Keterangan</th>
+                          <th className="py-6 px-4 w-24">Aksi</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-50">
@@ -555,6 +593,22 @@ export default function App() {
                               )}
                             </td>
                             <td className="py-6 px-4 text-xs text-slate-500 italic max-w-xs truncate">{t.note}</td>
+                            <td className="py-6 px-4">
+                              <div className="flex items-center gap-2">
+                                <button 
+                                  onClick={() => handleEditClick(t)}
+                                  className="p-2 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all"
+                                >
+                                  <Settings className="w-4 h-4" />
+                                </button>
+                                <button 
+                                  onClick={() => handleDelete(t.id)}
+                                  className="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -586,9 +640,12 @@ export default function App() {
             >
               <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
               <div className="flex items-center justify-between mb-8">
-                <h3 className="text-2xl font-bold text-slate-900">Agenda Baru</h3>
+                <h3 className="text-2xl font-bold text-slate-900">{editingId ? 'Edit Agenda' : 'Agenda Baru'}</h3>
                 <button 
-                  onClick={() => setIsModalOpen(false)}
+                  onClick={() => {
+                    setIsModalOpen(false);
+                    setEditingId(null);
+                  }}
                   className="p-3 rounded-full hover:bg-slate-50 transition-all text-slate-400 hover:text-rose-500"
                 >
                   <X className="w-6 h-6" />
@@ -671,7 +728,7 @@ export default function App() {
                     type="submit"
                     className="w-full bg-indigo-600 text-white py-4 rounded-[1.5rem] font-bold text-lg shadow-xl shadow-indigo-100 hover:bg-indigo-700 active:scale-[0.98] transition-all"
                   >
-                    Simpan Agenda
+                    {editingId ? 'Simpan Perubahan' : 'Simpan Agenda'}
                   </button>
                 </div>
               </form>
