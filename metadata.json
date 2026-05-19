@@ -1,0 +1,8 @@
+{
+  "name": "Agenda Kerja BK - SMPN 7",
+  "description": "Media pembelajaran interaktif dan sistem manajemen agenda kerja Bimbingan Konseling SMPN 7.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
