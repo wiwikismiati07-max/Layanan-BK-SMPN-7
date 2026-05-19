@@ -63,9 +63,9 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   
   // Form States
-  const [newTransaction, setNewTransaction] = useState<Omit<Transaction, 'id' | 'createdAt'>>({
+  const [newTransaction, setNewTransaction] = useState({
     date: new Date().toISOString().split('T')[0],
-    description: '',
+    descriptions: Array(8).fill(''),
     target: '',
     photoUrl: '',
     note: ''
@@ -102,7 +102,11 @@ export default function App() {
   const handleAddTransaction = (e: React.FormEvent) => {
     e.preventDefault();
     const item: Transaction = {
-      ...newTransaction,
+      date: newTransaction.date,
+      target: newTransaction.target,
+      photoUrl: newTransaction.photoUrl,
+      note: newTransaction.note,
+      description: newTransaction.descriptions.filter(d => d.trim() !== '').join(', '),
       id: Date.now().toString(),
       createdAt: Date.now()
     };
@@ -110,7 +114,7 @@ export default function App() {
     setIsModalOpen(false);
     setNewTransaction({
       date: new Date().toISOString().split('T')[0],
-      description: '',
+      descriptions: Array(8).fill(''),
       target: '',
       photoUrl: '',
       note: ''
@@ -621,15 +625,23 @@ export default function App() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Uraian Kegiatan</label>
-                  <input 
-                    type="text" 
-                    placeholder="Bimbingan Kelompok, Konseling Individu, dll"
-                    required
-                    value={newTransaction.description}
-                    onChange={(e) => setNewTransaction({ ...newTransaction, description: e.target.value })}
-                    className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3.5 focus:ring-2 focus:ring-indigo-500/20 transition-all outline-none text-sm font-semibold"
-                  />
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Uraian Kegiatan (8 Kolom Manual)</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {newTransaction.descriptions.map((desc, idx) => (
+                      <input 
+                        key={idx}
+                        type="text" 
+                        placeholder={`Kegiatan ${idx + 1}...`}
+                        value={desc}
+                        onChange={(e) => {
+                          const updated = [...newTransaction.descriptions];
+                          updated[idx] = e.target.value;
+                          setNewTransaction({ ...newTransaction, descriptions: updated });
+                        }}
+                        className="w-full bg-slate-50 border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500/20 transition-all outline-none text-sm font-semibold"
+                      />
+                    ))}
+                  </div>
                 </div>
 
                 <div className="space-y-2">
